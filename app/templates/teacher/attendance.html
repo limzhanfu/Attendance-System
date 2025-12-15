@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "macro.html" import render_table, cell %}
+{% block content %}
+
+<div class="container">
+
+{% if session == [] %}
+    Nothing
+{% else %}
+
+{% macro build_row(r) %}
+	{{ cell(r.student.user.first_name ~ " " ~ r.student.user.last_name) }}
+	{{ cell(r.student.user.email) }}
+    {{ cell(r.status.name.capitalize() ) }}
+{% endmacro %}
+
+{{ render_table(
+    ["Name" ,"Email" ,"Status"],
+    session.records,
+    build_row
+) }}
+
+{% endif %}
+</div>
+<a href="{{url_for('teacher_timetable')}}">Back</a>
+{% endblock %}

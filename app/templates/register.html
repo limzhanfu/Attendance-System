@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "macro.html" import render_field %}
+
+{% block content %}
+    <h1>Register</h1>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{render_field(form.first_name ,64)}}
+        {{render_field(form.last_name ,64)}}
+        {{render_field(form.email ,64)}}
+        {{render_field(form.role ,1)}}
+        {{render_field(form.password ,64)}}
+        {{render_field(form.password2 ,64)}}
+
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}

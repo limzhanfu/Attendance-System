@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "macro.html" import render_table, cell %}
+
+{% block content %}
+    <h1>Class Sessions</h1>
+    {% macro build_row(i) %}
+        {{ cell(i.id) }}
+        {{ cell(i.start_at.date()) }}
+        {{ cell(i.start_at.time()) }}
+        {{ cell(i.end_at.time()) }}
+    {% endmacro %}
+
+    {{render_table(
+        ["ID" ,"Date" ,"Start Time" ,"End Time"],
+        sessions,
+        build_row
+    )}}
+
+{% endblock %}
+

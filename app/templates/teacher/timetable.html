@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "macro.html" import render_table, cell %}
+{% block content %}
+
+<div class="container">
+
+{% if sessions == [] %}
+    Nothing
+{% else %}
+
+{% macro build_row(s) %}
+    {% macro set_activate_btn(session_id) %}
+        <form action="{{ url_for('mark_attendance', session_id=s.id) }}" method="POST" style="display:inline;">
+            <button type="submit">Activate</button>
+        </form>
+    {% endmacro %}
+
+    {% macro set_href(session_id) %}
+        <a href="{{ url_for('mark_attendance', session_id=s.id) }}">
+            {{s.attendance_code}}
+        </a>
+    {% endmacro %}
+
+	{{ cell(s.start_at.date()) }}
+	{{ cell(s.start_at.strftime("%H:%M") ~" - "~ s.end_at.strftime("%H:%M")) }}
+    {{ cell(s.allocation.course.name ) }}
+    {{ cell(s.allocation.group.name) }}
+
+    {% if not s.is_activated %}
+        {{ cell(set_activate_btn(s.id)) }}        
+    {% else %}
+        {{ cell(set_href(s.id)) }}
+    {% endif %}
+    
+{% endmacro %}
+
+{{ render_table(
+    ["Date" ,"Time" ,"Course" ,"Group" ,"Action"],
+    sessions,
+    build_row
+) }}
+
+{% endif %}
+</div>
+
+{% endblock %}

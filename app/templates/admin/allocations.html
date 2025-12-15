@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "macro.html" import render_table, cell %}
+{% block content %}
+
+<div class="container">
+
+<a href="{{ url_for('create_allocation') }}">
+    <button>Create</button>
+</a>
+<br><br>
+
+{% if allocations == [] %}
+    None, please create something
+{% else %}
+
+{% macro build_row(i) %}
+    {% set session_href %}
+        <a href="{{url_for('view_sessions' ,id=i.id)}}">{{i.id}}</a>
+    {% endset %}
+
+    {{ cell(session_href) }}
+    {{ cell(i.teacher.user.first_name ~ " " ~ i.teacher.user.last_name) }}
+    {{ cell(i.course.code ~ " " ~ i.course.name) }}
+    {{ cell(i.group.name) }}
+    {{ cell("from " ~ i.semester_start ~ " to " ~ i.semester_end) }}
+    {{ cell(i.weekday.name.capitalize() ~ ", from " ~ i.start_time ~ " to " ~ i.end_time) }}
+
+    {% set delete_btn %}
+    <form action="{{ url_for('delete_allocation', id=i.id) }}" method="POST" style="display:inline;">
+        <button type="submit">Delete</button>
+    </form>
+    {% endset %}
+    {{ cell(delete_btn) }}
+{% endmacro %}
+
+{{ render_table(
+    ["ID", "Teacher", "Course", "Group", "Date", "Time", "Action"],
+    allocations,
+    build_row
+) }}
+
+{% endif %}
+</div>
+
+{% endblock %}

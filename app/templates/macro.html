@@ -1,0 +1,30 @@
+{% macro render_field(field ,size=32) %}
+	<p>
+		{{field.label}} <br>
+		{{field(size=size)}} <br>
+		{% for error in field.errors %}
+			<span style="color: red;">[{{error}}]</span>
+		{% endfor %}
+	</p>
+{% endmacro %}
+
+{% macro cell(value) %}
+	<td class="table-data">{{ value }}</td>
+{% endmacro %}
+
+{% macro render_table(headers, rows, row_builder) %}
+<table class="table">
+    <tr class="table-header">
+        {% for h in headers %}
+            <th class="header__item">{{ h }}</th>
+        {% endfor %}
+    </tr>
+
+    {% for row in rows %}
+        <tr class="table-row">
+            {{ row_builder(row) }}
+        </tr>
+    {% endfor %}
+</table>
+{% endmacro %}
+
