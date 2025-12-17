@@ -1,23 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Base</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <div class="header-outer">
+        <div class="header-inner responsive-wrapper">
+            <div class="header-logo">
+                <a href="/">
+                    <img src="https://assets.codepen.io/285131/acme-2.svg" />
+                </a>
+            </div>
+            <nav class="header-navigation">
+                {% if not current_user.is_anonymous %}
+                    <a href="/">Home</a>
+                    <a href="#">About</a>
+                    {% if current_user.teacher %}
+                        <a href="{{url_for('teacher_timetable')}}">Timetable</a>    
+                    {% endif %}
+                    <a href="{{url_for('logout')}}">Logout</a>
+
+                {% else %}
+                    <a href="{{url_for('login')}}">Login</a>
+                    <a href="{{url_for('register')}}">Register</a>
+
+                {% endif %}
+            </nav>
+        </div>
+    </div>
 </head>
 <body>
-	<hr>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <ul>
-            {% for message in messages %}
-            <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        {% endwith %}
-	{% block content %}
-	{% endblock %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for category, message in messages %}
+    <div class="notification"  data-category="{{ category }}" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="notification__icon"></div>
+
+        <div class="notification__body">
+            <h2 class="notification__header">
+                {{ category|capitalize }}
+            </h2>
+            <p class="notification__text">
+                {{ message }}
+            </p>
+        </div>
+
+        <div class="notification__action">
+            <button class="button" aria-label="dismiss this notification"
+                onclick="this.closest('.notification').remove()">
+                <span aria-hidden="true">✕</span>
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+{% endwith %}
+
+{% block content %}
+{% endblock %}
+
 </body>
 </html>

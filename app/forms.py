@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 import wtforms as wtf
-from wtforms.validators import DataRequired ,Email ,EqualTo ,ValidationError
+from wtforms.validators import DataRequired ,Email ,EqualTo ,ValidationError 
 from app import db
 from app.models import *
 import sqlalchemy as sa 
@@ -95,11 +95,12 @@ class AllocationForm(FlaskForm):
         else:
              self.dates = dates
 
-class MarkAttendanceForm(FlaskForm):
-     checkboxes = []
-     submit = wtf.SubmitField("Submit") 
+class AttendanceRowForm(wtf.Form):
+    record_id = wtf.HiddenField()  
+    student_name = wtf.StringField("Name", render_kw={'readonly': True})
+    is_present = wtf.BooleanField("Present")
+    status = wtf.StringField("Status" ,render_kw={'readonly': True})
 
-     def generate_checkbox(self ,session_id ,student_id):
-          checkbox = wtf.BooleanField("CheckBox")
-          self.checkboxes.append((checkbox ,session_id ,student_id))
-          return checkbox
+class MarkAttendanceForm(FlaskForm):
+    records = wtf.FieldList(wtf.FormField(AttendanceRowForm), min_entries=0)
+    submit = wtf.SubmitField("Update Attendance")

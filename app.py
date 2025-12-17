@@ -67,6 +67,7 @@ if(__name__ == "__main__"):
 		# db.session.commit()
 
 		# a.weekday = WeekdayEnum.MONDAY
+		print(db.session.scalars(sa.select(StudentAttendanceRecord)).all())
 
 		pass
 

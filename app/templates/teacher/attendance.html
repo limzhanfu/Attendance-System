@@ -1,26 +1,37 @@
 {% extends "base.html" %}
-{% from "macro.html" import render_table, cell %}
+{% from "macro.html" import render_table, cell, build_row %}
 {% block content %}
-
 <div class="container">
+    <h2>Mark Attendance</h2>
+    <p>Session: {{ session.name }} (Code: <strong>{{ session.attendance_code }}</strong>)</p>
+    
+    {% macro build_row(r) %}
+        {% macro set_checkbox() %}
+            {{ r.is_present }}
+        {% endmacro %}
 
-{% if session == [] %}
-    Nothing
-{% else %}
+        {{ r.record_id }}
+        {{ cell(r.student_name.data) }}
+        {{ cell(r.status.data) }}
+        {{ cell(set_checkbox()) }}
+    {% endmacro %}
 
-{% macro build_row(r) %}
-	{{ cell(r.student.user.first_name ~ " " ~ r.student.user.last_name) }}
-	{{ cell(r.student.user.email) }}
-    {{ cell(r.status.name.capitalize() ) }}
-{% endmacro %}
+    {% if not form.records %}
+        <p>No student records to display.</p>
+    {% else %}
+        
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            {{ render_table(
+                ["Name" ,"Status" ,"Action"],
+                form.records,
+                build_row,
+            ) }}
+            {{ form.submit() }}
+        </form>
 
-{{ render_table(
-    ["Name" ,"Email" ,"Status"],
-    session.records,
-    build_row
-) }}
-
-{% endif %}
+    {% endif %}
+    
+    <a href="{{url_for('teacher_timetable')}}">Back</a>
 </div>
-<a href="{{url_for('teacher_timetable')}}">Back</a>
 {% endblock %}

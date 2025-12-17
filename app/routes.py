@@ -14,26 +14,28 @@ from wtforms import BooleanField
 def index():
 	return render_template("index.html" ,user=current_user)
 
-@app.route('/login' ,methods=["POST" ,"GET"])
+@app.route('/login', methods=["GET", "POST"])
 def login():
-	if(current_user.is_authenticated):
-		return redirect(url_for("index"))
+    if(current_user.is_authenticated):
+        return redirect(url_for("index"))
 
-	login_form = LoginForm()
-	if(login_form.validate_on_submit()):
-		user = db.session.scalar(sa.select(User).where(User.email == login_form.email.data))
+    login_form = LoginForm()
 
-		if(not user is None):
-			if(not user.check_password(login_form.password.data)):
-				flash("Invalid id or password" ,"error")	
-				return render_template("login.html" ,form=login_form)
-				
+    if(login_form.validate_on_submit()):
+        user = db.session.scalar(
+            sa.select(User).where(User.email == login_form.email.data)
+        )
 
-			login_user(user)
-			flash("Login Successfully" ,"success")	
-			return redirect(url_for("index"))
+        if(not user or not user.check_password(login_form.password.data)):
+            flash("Invalid email or password", "error")
+            return redirect(url_for("login"))  
 
-	return render_template("login.html" ,form=login_form)
+        login_user(user)
+        flash("Login successfully", "success")
+        return redirect(url_for("index"))
+
+    return render_template("login.html", form=login_form)
+
 
 @app.route('/logout')
 def logout():
@@ -180,28 +182,40 @@ def teacher_timetable():
     sessions = db.session.scalars(stmt).all()
     return render_template("teacher/timetable.html", sessions=sessions)
 
-@app.route("/teacher/sessions/<int:session_id>/attendance",methods=["GET", "POST"])
+@app.route("/teacher/sessions/<int:session_id>/attendance", methods=["GET", "POST"])
 @login_required
 @role_required("Teacher")
 def mark_attendance(session_id):
-	session = db.session.get(ClassSession ,session_id)
+	session = db.session.get(ClassSession, session_id)
 	if(not session):
-		abort(404)	
-	
-	if(not session.is_activated):
-		session.is_activated = True
+		abort(404)
 
-		session.attendance_code = session.attendance_code = f"{random.randint(0, 999999):06d}"
-		records = [StudentAttendanceRecord(
-			session=session,
-			has_cancelled=False,
-			status=Status.ABSENT,
-			student_id=s.id
-		)for s in session.allocation.group.students]
+	from collections import namedtuple
+	Record = namedtuple("Record", ["record_id", "student_name", "is_present", "status"])
 
-		db.session.add_all(records)
-		db.session.commit()
+	data = {
+		"records": [
+			Record(
+				r.id,
+				f"{r.student.user.first_name} {r.student.user.last_name}",
+				r.status == Status.PRESENT,
+				r.status.name.capitalize()
+			)
+			for r in session.records
+		]
+	}
+	if(request.method == "POST"):
+		form = MarkAttendanceForm(request.form ,data=data) 
+		if(form.validate_on_submit()):
+			for row in form.records:
+				record = db.session.get(StudentAttendanceRecord, row.record_id.data)
+				if(record):
+					record.status = Status.PRESENT if row.is_present.data else Status.ABSENT
+					row.status.data = record.status.name.capitalize()
+			db.session.commit()
+	else:
+		form = MarkAttendanceForm(data=data)  
 
-	return render_template("teacher/attendance.html" ,session=session)
-	
+	return render_template("teacher/attendance.html", session=session, form=form)
+
 
